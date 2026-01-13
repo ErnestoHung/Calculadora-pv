@@ -1,0 +1,16 @@
+{
+    "name": "Calculadora Punto de Venta",
+    "short_name": "Calculadora PV",
+    "description": "Una calculadora simple de punto de venta para convertir entre USD y Bs.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2c3e50",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
