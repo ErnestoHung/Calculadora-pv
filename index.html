@@ -54,9 +54,24 @@
         </div>
 
         <div class="controles-section">
+            <button id="save-session-btn" class="btn btn-secondary">Guardar Cuenta</button>
             <button id="reset-btn" class="btn btn-danger">Reiniciar Todo</button>
+            <div class="autosave-wrapper">
+                <input type="checkbox" id="autosave-checkbox">
+                <label for="autosave-checkbox">Guardar automáticamente al reiniciar</label>
+            </div>
         </div>
 
+    </div>
+
+    <div class="saved-sessions-container container card">
+        <div class="saved-sessions-header">
+            <h2>Cuentas Guardadas</h2>
+            <button id="delete-all-btn" class="btn btn-danger btn-small">Eliminar Todas</button>
+        </div>
+        <div id="saved-sessions-list">
+            <!-- La lista de cuentas guardadas se renderizará aquí -->
+        </div>
     </div>
 
     <script src="app.js"></script>

@@ -10,34 +10,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const addBolivarItemBtn = document.getElementById('add-bolivar-item');
 
     const totalBsDisplay = document.getElementById('total-bs-display');
-        const totalUsdDisplay = document.getElementById('total-usd-display');
-     
-        const resetBtn = document.getElementById('reset-btn');
-        const themeToggleBtn = document.getElementById('theme-toggle');
-     
-         // --- ESTADO INICIAL ---
-         let dolarItemCount = 0;    let bolivarItemCount = 0;
+    const totalUsdDisplay = document.getElementById('total-usd-display');
+
+    const resetBtn = document.getElementById('reset-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const saveSessionBtn = document.getElementById('save-session-btn');
+    const savedSessionsList = document.getElementById('saved-sessions-list');
+    const autosaveCheckbox = document.getElementById('autosave-checkbox');
+    const deleteAllBtn = document.getElementById('delete-all-btn');
+
+    // --- ESTADO INICIAL ---
+    let dolarItemCount = 0;
+    let bolivarItemCount = 0;
+    let savedSessions = [];
 
     // --- FUNCIONES ---
 
-    /**
-     * Formatea un número a un formato de moneda con dos decimales.
-     * @param {number} num - El número a formatear.
-     * @returns {string} - El número formateado.
-     */
-    const formatCurrency = (num) => {
-        return isNaN(num) ? '0.00' : num.toFixed(2);
-    };
+    const formatCurrency = (num) => isNaN(num) ? '0.00' : num.toFixed(2);
 
-    /**
-     * Calcula y actualiza todos los subtotales y totales.
-     * Se llama cada vez que un valor cambia.
-     */
     const calcularTotales = () => {
         const tasa = parseFloat(tasaInput.value) || 0;
         let granTotalBs = 0;
 
-        // Calcular subtotales en Dólares
         document.querySelectorAll('.dolar-item-row').forEach(row => {
             const precio = parseFloat(row.querySelector('.precio-dolar').value) || 0;
             const cantidad = parseInt(row.querySelector('.cantidad-dolar').value) || 0;
@@ -46,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
             granTotalBs += subtotalBs;
         });
 
-        // Calcular subtotales en Bolívares
         document.querySelectorAll('.bolivar-item-row').forEach(row => {
             const precio = parseFloat(row.querySelector('.precio-bolivar').value) || 0;
             const cantidad = parseInt(row.querySelector('.cantidad-bolivar').value) || 0;
@@ -55,70 +48,66 @@ document.addEventListener('DOMContentLoaded', () => {
             granTotalBs += subtotalBs;
         });
 
-        // Calcular totales generales
         const granTotalUsd = tasa > 0 ? granTotalBs / tasa : 0;
 
-        // Actualizar la UI
         totalBsDisplay.textContent = `${formatCurrency(granTotalBs)} Bs.`;
         totalUsdDisplay.textContent = `${formatCurrency(granTotalUsd)} $`;
     };
 
-    /**
-     * Crea y añade una nueva fila de item para la sección de dólares.
-     */
-    const agregarItemDolar = () => {
+    const attachInputListeners = () => {
+        document.querySelectorAll('.precio-dolar, .cantidad-dolar, .precio-bolivar, .cantidad-bolivar').forEach(input => {
+            input.removeEventListener('input', calcularTotales);
+            input.addEventListener('input', calcularTotales);
+        });
+    };
+
+    const agregarItemDolar = (precio = '', cantidad = 1) => {
         dolarItemCount++;
         const itemId = `dolar-item-${dolarItemCount}`;
         const itemHtml = `
             <div class="item-row dolar-item-row" id="${itemId}">
-                <input type="number" class="precio-dolar" placeholder="Precio en $" step="0.01">
-                <input type="number" class="cantidad-dolar" value="1" min="1" step="1">
+                <input type="number" class="precio-dolar" placeholder="Precio en $" step="0.01" value="${precio}">
+                <input type="number" class="cantidad-dolar" value="${cantidad}" min="1" step="1">
                 <span class="item-subtotal subtotal-dolar">0.00 Bs.</span>
                 <button class="btn-delete" aria-label="Eliminar item">×</button>
             </div>
         `;
         dolaresItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
-        attachInputListeners();
-
+        attachInputListeners(); // Re-add listener call for new rows
         // Auto-focus en el nuevo campo de precio
         document.querySelector(`#${itemId} .precio-dolar`).focus();
     };
 
-    /**
-     * Crea y añade una nueva fila de item para la sección de bolívares.
-     */
-    const agregarItemBolivar = () => {
+    const agregarItemBolivar = (precio = '', cantidad = 1) => {
         bolivarItemCount++;
         const itemId = `bolivar-item-${bolivarItemCount}`;
         const itemHtml = `
             <div class="item-row bolivar-item-row" id="${itemId}">
-                <input type="number" class="precio-bolivar" placeholder="Precio en Bs." step="0.01">
-                <input type="number" class="cantidad-bolivar" value="1" min="1" step="1">
+                <input type="number" class="precio-bolivar" placeholder="Precio en Bs." step="0.01" value="${precio}">
+                <input type="number" class="cantidad-bolivar" value="${cantidad}" min="1" step="1">
                 <span class="item-subtotal subtotal-bolivar">0.00 Bs.</span>
                 <button class="btn-delete" aria-label="Eliminar item">×</button>
             </div>
         `;
         bolivaresItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
-        attachInputListeners();
-        
+        attachInputListeners(); // Re-add listener call for new rows
         // Auto-focus en el nuevo campo de precio
         document.querySelector(`#${itemId} .precio-bolivar`).focus();
     };
-    
-    /**
-     * Añade event listeners a todos los campos de entrada de items para recalcular al cambiar.
-     * Se asegura de no agregar listeners duplicados y de no afectar el input de la tasa.
-     */
-    const attachInputListeners = () => {
-        document.querySelectorAll('.precio-dolar, .cantidad-dolar, .precio-bolivar, .cantidad-bolivar').forEach(input => {
-            input.removeEventListener('input', calcularTotales); // Evita duplicados
-            input.addEventListener('input', calcularTotales);
-        });
+
+    const reiniciarCalculadora = (addInitialRows = true) => {
+        dolaresItemsContainer.innerHTML = '';
+        bolivaresItemsContainer.innerHTML = '';
+        dolarItemCount = 0;
+        bolivarItemCount = 0;
+        if (addInitialRows) {
+            agregarItemDolar();
+            agregarItemBolivar();
+        }
+        attachInputListeners();
+        calcularTotales();
     };
 
-    /**
-     * Maneja los clics para eliminar filas usando delegación de eventos.
-     */
     const handleContainerClick = (e) => {
         if (e.target.classList.contains('btn-delete')) {
             e.target.closest('.item-row').remove();
@@ -126,31 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Selecciona el contenido de un input de cantidad cuando recibe foco.
-     */
     const handleContainerFocus = (e) => {
         if (e.target.classList.contains('cantidad-dolar') || e.target.classList.contains('cantidad-bolivar')) {
             e.target.select();
         }
     };
 
-    /**
-     * Reinicia la calculadora a su estado inicial, excepto la tasa.
-     */
-    const reiniciarCalculadora = () => {
-        dolaresItemsContainer.innerHTML = '';
-        bolivaresItemsContainer.innerHTML = '';
-        dolarItemCount = 0;
-        bolivarItemCount = 0;
-        agregarItemDolar();
-        agregarItemBolivar();
-        calcularTotales(); // Asegura que los totales se actualicen a 0.00 después del reinicio
-    };
-
-    /**
-     * Cambia entre el tema claro y oscuro.
-     */
     const toggleTheme = () => {
         document.body.classList.toggle('dark-mode');
         const isDarkMode = document.body.classList.contains('dark-mode');
@@ -158,41 +128,147 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     };
 
+    // --- Funciones de Sesión ---
+
+    const renderSavedSessions = () => {
+        savedSessionsList.innerHTML = '';
+        if (savedSessions.length === 0) {
+            savedSessionsList.innerHTML = '<p>No hay cuentas guardadas.</p>';
+            deleteAllBtn.style.display = 'none'; // Oculta el botón si no hay cuentas
+            return;
+        }
+        deleteAllBtn.style.display = 'inline-block'; // Muestra el botón si hay cuentas
+
+        savedSessions.forEach(session => {
+            const sessionEl = document.createElement('div');
+            sessionEl.classList.add('saved-session-item');
+            sessionEl.innerHTML = `
+                <span class="name">${session.name}</span>
+                <div class="actions">
+                    <button class="btn btn-secondary load-session-btn" data-id="${session.id}">Cargar</button>
+                    <button class="btn btn-danger delete-session-btn" data-id="${session.id}">Eliminar</button>
+                </div>
+            `;
+            savedSessionsList.appendChild(sessionEl);
+        });
+    };
+
+    const saveCurrentSession = (isAutomatic = false) => {
+        const currentTotalBs = totalBsDisplay.textContent;
+        // No guarda si el total es 0.00
+        if (parseFloat(currentTotalBs) === 0) return;
+
+        let nombre;
+        if (isAutomatic) {
+            nombre = `${currentTotalBs} - ${new Date().toLocaleString()}`;
+        } else {
+            const defaultName = `${currentTotalBs} - ${new Date().toLocaleString()}`;
+            nombre = prompt('Ingresa un nombre para esta cuenta:', defaultName);
+            if (!nombre) return;
+        }
+
+        const dolarItems = Array.from(document.querySelectorAll('.dolar-item-row')).map(row => ({
+            precio: row.querySelector('.precio-dolar').value,
+            cantidad: row.querySelector('.cantidad-dolar').value,
+        }));
+
+        const bolivarItems = Array.from(document.querySelectorAll('.bolivar-item-row')).map(row => ({
+            precio: row.querySelector('.precio-bolivar').value,
+            cantidad: row.querySelector('.cantidad-bolivar').value,
+        }));
+
+        const session = {
+            id: Date.now(),
+            name: nombre,
+            tasa: tasaInput.value,
+            dolarItems,
+            bolivarItems,
+        };
+
+        savedSessions.push(session);
+        localStorage.setItem('savedSessions', JSON.stringify(savedSessions));
+        renderSavedSessions();
+    };
+
+    const loadSession = (id) => {
+        const session = savedSessions.find(s => s.id === id);
+        if (!session) return;
+
+        reiniciarCalculadora(false); // Limpia la calculadora sin añadir filas por defecto
+        tasaInput.value = session.tasa;
+
+        session.dolarItems.forEach(item => agregarItemDolar(item.precio, item.cantidad));
+        session.bolivarItems.forEach(item => agregarItemBolivar(item.precio, item.cantidad));
+        
+        attachInputListeners();
+        calcularTotales();
+    };
+
+    const deleteSession = (id) => {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta cuenta?')) return;
+        savedSessions = savedSessions.filter(s => s.id !== id);
+        localStorage.setItem('savedSessions', JSON.stringify(savedSessions));
+        renderSavedSessions();
+    };
+
+    const deleteAllSessions = () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar TODAS las cuentas guardadas? Esta acción no se puede deshacer.')) return;
+        savedSessions = [];
+        localStorage.setItem('savedSessions', JSON.stringify(savedSessions));
+        renderSavedSessions();
+    };
+
+    savedSessionsList.addEventListener('click', (e) => {
+        const id = parseInt(e.target.dataset.id);
+        if (e.target.classList.contains('load-session-btn')) {
+            loadSession(id);
+        } else if (e.target.classList.contains('delete-session-btn')) {
+            deleteSession(id);
+        }
+    });
 
     // --- EVENT LISTENERS INICIALES ---
-    // Manejador específico para la tasa: calcula y guarda en localStorage
     tasaInput.addEventListener('input', () => {
         calcularTotales();
         localStorage.setItem('tasaDelDia', tasaInput.value);
     });
 
-    addDolarItemBtn.addEventListener('click', agregarItemDolar);
-    addBolivarItemBtn.addEventListener('click', agregarItemBolivar);
-    resetBtn.addEventListener('click', reiniciarCalculadora);
-    themeToggleBtn.addEventListener('click', toggleTheme);
+    addDolarItemBtn.addEventListener('click', () => agregarItemDolar());
+    addBolivarItemBtn.addEventListener('click', () => agregarItemBolivar());
+    
+    resetBtn.addEventListener('click', () => {
+        if (autosaveCheckbox.checked) {
+            saveCurrentSession(true); // Guarda automáticamente sin prompt
+        }
+        reiniciarCalculadora(true);
+    });
 
-    // Delegación de eventos para eliminar filas y seleccionar texto
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    saveSessionBtn.addEventListener('click', () => saveCurrentSession(false)); // Guardado manual con prompt
+    deleteAllBtn.addEventListener('click', deleteAllSessions);
+
     dolaresItemsContainer.addEventListener('click', handleContainerClick);
     bolivaresItemsContainer.addEventListener('click', handleContainerClick);
     dolaresItemsContainer.addEventListener('focusin', handleContainerFocus);
     bolivaresItemsContainer.addEventListener('focusin', handleContainerFocus);
 
     // --- INICIALIZACIÓN ---
-    // Cargar la tasa desde localStorage al inicio
     const savedTasa = localStorage.getItem('tasaDelDia');
     if (savedTasa) {
         tasaInput.value = savedTasa;
     }
 
-    // Cargar el tema guardado
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
         themeToggleBtn.textContent = '☀️';
     }
 
-    agregarItemDolar(); // Crea la primera fila de dólares
-    agregarItemBolivar(); // Crea la primera fila de bolívares
-    attachInputListeners(); // Adjunta listeners a los inputs de las filas recién creadas
-    calcularTotales(); // Realiza el cálculo inicial con la tasa cargada (si existe) o el valor por defecto
+    const loadedSessions = JSON.parse(localStorage.getItem('savedSessions'));
+    if (loadedSessions) {
+        savedSessions = loadedSessions;
+    }
+
+    renderSavedSessions();
+    reiniciarCalculadora(true);
 });

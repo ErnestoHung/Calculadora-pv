@@ -233,6 +233,9 @@ h2 {
 .controles-section {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 .btn-danger {
@@ -243,4 +246,69 @@ h2 {
 
 .btn-danger:hover {
     background-color: #c0392b;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-small {
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+.autosave-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+}
+
+
+/* Saved Sessions */
+.saved-sessions-container {
+    margin-top: 20px;
+}
+
+.saved-sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.saved-sessions-header h2 {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+#saved-sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.saved-session-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 5px;
+    background-color: var(--bg-color);
+}
+
+.saved-session-item .name {
+    font-weight: bold;
+}
+
+.saved-session-item .actions button {
+    margin-left: 10px;
+    font-size: 0.9em;
 }
