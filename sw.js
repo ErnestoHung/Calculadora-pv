@@ -1,12 +1,12 @@
-// Versión 3: Usando rutas absolutas y fallback de navegación robusto
-const CACHE_NAME = 'calculadora-pv-cache-v3';
+// Versión 4: Usando rutas relativas para compatibilidad con GitHub Pages
+const CACHE_NAME = 'calculadora-pv-cache-v4';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/app.js',
-    '/icon.svg',
-    '/manifest.json'
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './icon.svg',
+    './manifest.json'
 ];
 
 // Evento de instalación: se guarda el caché con los archivos de la app
@@ -14,7 +14,7 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Cache v3 abierto, guardando archivos principales.');
+                console.log('Cache v4 abierto, guardando archivos principales.');
                 return cache.addAll(urlsToCache);
             })
     );
@@ -38,7 +38,7 @@ self.addEventListener('fetch', event => {
                     // Si la petición era para navegar a una página, devuelve el index.html offline
                     if (event.request.mode === 'navigate') {
                         console.log('Devolviendo página offline desde el caché.');
-                        return caches.match('/index.html');
+                        return caches.match('./index.html');
                     }
                 });
             })
