@@ -271,4 +271,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderSavedSessions();
     reiniciarCalculadora(true);
+
+    // --- Modal "Acerca de" ---
+    const aboutModal = document.getElementById('about-modal');
+    const aboutBtn = document.getElementById('about-btn');
+    const closeButton = document.querySelector('.close-button');
+
+    const openModal = () => {
+        aboutModal.style.display = 'block';
+    };
+
+    const closeModal = () => {
+        aboutModal.style.display = 'none';
+    };
+
+    aboutBtn.addEventListener('click', openModal);
+    closeButton.addEventListener('click', closeModal);
+
+    window.addEventListener('click', (event) => {
+        if (event.target == aboutModal) {
+            closeModal();
+        }
+    });
 });
