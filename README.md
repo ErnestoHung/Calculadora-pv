@@ -9,9 +9,11 @@ The application is built with vanilla HTML, CSS, and JavaScript, with no externa
 - **Real-time Calculation:** All totals and subtotals are updated automatically as values are changed.
 - **Manual Exchange Rate:** A dedicated input for the user to set the USD to Bs. exchange rate.
 - **Dynamic Rows:** Users can add and delete an unlimited number of line items for each currency.
-- **Session Management:** Users can save the current state of a calculation, view a list of saved calculations, and load or delete them. This includes an "auto-save on reset" feature.
+- **Multi-Account Support (Tabs):** Independent tab system to manage multiple accounts or calculations simultaneously.
+- **Automatic Persistence:** Automatic state saving in `localStorage` for all open tabs, preventing data loss during screen lock or app switching.
+- **Session Management:** Save, load, and delete named sessions, including an "auto-save on reset" feature.
 - **Dark/Light Theme:** A theme-switcher allows users to toggle between a light and dark mode.
-- **Progressive Web App (PWA):** The application includes a service worker and a web manifest, allowing it to be "installed" on a desktop or mobile device and to function while offline.
+- **Progressive Web App (PWA):** Mobile-optimized with offline support and installable interface.
 - **Continuous Deployment:** The project is configured with a GitHub Actions workflow to automatically deploy to GitHub Pages when changes are pushed to the `main` branch.
 
 ## Building and Running

@@ -9,9 +9,11 @@ La aplicación está construida con HTML, CSS y JavaScript vanilla, sin framewor
 - **Cálculo en tiempo real:** Todos los totales y subtotales se actualizan automáticamente a medida que se cambian los valores.
 - **Tasa de cambio manual:** Una entrada dedicada para que el usuario establezca la tasa de cambio de USD a Bs.
 - **Filas dinámicas:** Los usuarios pueden añadir y eliminar un número ilimitado de partidas para cada moneda.
-- **Gestión de sesiones:** Los usuarios pueden guardar el estado actual de un cálculo, ver una lista de los cálculos guardados y cargarlos o eliminarlos. Esto incluye una función de "autoguardado al reiniciar".
-- **Tema oscuro/claro:** Un conmutador de temas permite a los usuarios alternar entre un modo claro y oscuro.
-- **Aplicación web progresiva (PWA):** La aplicación incluye un service worker y un manifiesto web, lo que permite "instalarla" en un dispositivo de sobremesa o móvil y que funcione sin conexión.
+- **Soporte Multicuenta (Pestañas):** Sistema de pestañas independientes para gestionar varias cuentas o cálculos al mismo tiempo.
+- **Persistencia Automática:** Guardado automático del estado en `localStorage` para todas las pestañas abiertas, evitando la pérdida de datos al bloquear la pantalla o cambiar de aplicación.
+- **Gestión de Sesiones:** Permite guardar, cargar y eliminar sesiones con nombre, incluyendo una función de "autoguardado al reiniciar".
+- **Tema Oscuro/Claro:** Conmutador de temas para alternar entre modo claro y oscuro.
+- **Aplicación Web Progresiva (PWA):** Optimizada para móviles, con soporte offline e interfaz instalable.
 - **Despliegue continuo:** El proyecto está configurado con un flujo de trabajo de GitHub Actions para desplegarse automáticamente en GitHub Pages cuando se suben cambios a la rama `main`.
 
 ## Construcción y ejecución

@@ -2,31 +2,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ELEMENTOS DEL DOM ---
     const tasaInput = document.getElementById('tasa-input');
-
     const dolaresItemsContainer = document.getElementById('dolares-items');
     const addDolarItemBtn = document.getElementById('add-dolar-item');
-
     const bolivaresItemsContainer = document.getElementById('bolivares-items');
     const addBolivarItemBtn = document.getElementById('add-bolivar-item');
-
     const totalBsDisplay = document.getElementById('total-bs-display');
     const totalUsdDisplay = document.getElementById('total-usd-display');
-
     const resetBtn = document.getElementById('reset-btn');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const saveSessionBtn = document.getElementById('save-session-btn');
     const savedSessionsList = document.getElementById('saved-sessions-list');
     const autosaveCheckbox = document.getElementById('autosave-checkbox');
     const deleteAllBtn = document.getElementById('delete-all-btn');
+    const tabsContainer = document.getElementById('tabs-container');
+    const addTabBtn = document.getElementById('add-tab-btn');
 
-    // --- ESTADO INICIAL ---
+    // --- ESTADO ---
+    let appState = {
+        activeTabIndex: 0,
+        nextTabNum: 2,
+        tabs: [
+            {
+                id: Date.now(),
+                name: "Cuenta 1",
+                tasa: localStorage.getItem('tasaDelDia') || '',
+                dolarItems: [],
+                bolivarItems: []
+            }
+        ]
+    };
+    let savedSessions = [];
     let dolarItemCount = 0;
     let bolivarItemCount = 0;
-    let savedSessions = [];
 
-    // --- FUNCIONES ---
+    // --- FUNCIONES CORE ---
 
     const formatCurrency = (num) => isNaN(num) ? '0.00' : num.toFixed(2);
+
+    const saveDraft = () => {
+        serializeCurrentTab();
+        localStorage.setItem('calculadora_draft', JSON.stringify(appState));
+    };
+
+    const serializeCurrentTab = () => {
+        const activeTab = appState.tabs[appState.activeTabIndex];
+        if (!activeTab) return;
+
+        activeTab.tasa = tasaInput.value;
+        activeTab.dolarItems = Array.from(document.querySelectorAll('.dolar-item-row')).map(row => ({
+            precio: row.querySelector('.precio-dolar').value,
+            cantidad: row.querySelector('.cantidad-dolar').value,
+        }));
+        activeTab.bolivarItems = Array.from(document.querySelectorAll('.bolivar-item-row')).map(row => ({
+            precio: row.querySelector('.precio-bolivar').value,
+            cantidad: row.querySelector('.cantidad-bolivar').value,
+        }));
+    };
 
     const calcularTotales = () => {
         const tasa = parseFloat(tasaInput.value) || 0;
@@ -49,9 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const granTotalUsd = tasa > 0 ? granTotalBs / tasa : 0;
-
         totalBsDisplay.textContent = `${formatCurrency(granTotalBs)} Bs.`;
         totalUsdDisplay.textContent = `${formatCurrency(granTotalUsd)} $`;
+        
+        saveDraft(); // Guardar cada vez que cambie algo
     };
 
     const attachInputListeners = () => {
@@ -61,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const agregarItemDolar = (precio = '', cantidad = 1) => {
+    const agregarItemDolar = (precio = '', cantidad = 1, focus = true) => {
         dolarItemCount++;
         const itemId = `dolar-item-${dolarItemCount}`;
         const itemHtml = `
@@ -73,12 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         dolaresItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
-        attachInputListeners(); // Re-add listener call for new rows
-        // Auto-focus en el nuevo campo de precio
-        document.querySelector(`#${itemId} .precio-dolar`).focus();
+        attachInputListeners();
+        if (focus) document.querySelector(`#${itemId} .precio-dolar`).focus();
     };
 
-    const agregarItemBolivar = (precio = '', cantidad = 1) => {
+    const agregarItemBolivar = (precio = '', cantidad = 1, focus = true) => {
         bolivarItemCount++;
         const itemId = `bolivar-item-${bolivarItemCount}`;
         const itemHtml = `
@@ -90,9 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         bolivaresItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
-        attachInputListeners(); // Re-add listener call for new rows
-        // Auto-focus en el nuevo campo de precio
-        document.querySelector(`#${itemId} .precio-bolivar`).focus();
+        attachInputListeners();
+        if (focus) document.querySelector(`#${itemId} .precio-bolivar`).focus();
     };
 
     const reiniciarCalculadora = (addInitialRows = true) => {
@@ -101,12 +131,117 @@ document.addEventListener('DOMContentLoaded', () => {
         dolarItemCount = 0;
         bolivarItemCount = 0;
         if (addInitialRows) {
-            agregarItemDolar();
-            agregarItemBolivar();
+            // Invertido el orden para que el foco quede en Dólares (el último que se añade con focus:true)
+            agregarItemBolivar('', 1, false);
+            agregarItemDolar('', 1, true);
         }
         attachInputListeners();
         calcularTotales();
     };
+
+    // --- GESTIÓN DE PESTAÑAS ---
+
+    const removeTab = (index) => {
+        if (appState.tabs.length <= 1) return;
+        if (!confirm('¿Cerrar esta cuenta? Los datos no guardados permanentemente se borrarán.')) return;
+        
+        appState.tabs.splice(index, 1);
+        if (appState.activeTabIndex >= appState.tabs.length) {
+            appState.activeTabIndex = appState.tabs.length - 1;
+        }
+        renderCurrentTab();
+        saveDraft();
+    };
+
+    const renameTab = (index) => {
+        const newName = prompt('Nombre de la cuenta:', appState.tabs[index].name);
+        if (newName) {
+            appState.tabs[index].name = newName;
+            renderTabs();
+            saveDraft();
+        }
+    };
+
+    // --- GESTIÓN DE PESTAÑAS ---
+
+    const renderTabs = () => {
+        const oldTabs = tabsContainer.querySelectorAll('.tab-item');
+        oldTabs.forEach(tab => tab.remove());
+
+        appState.tabs.forEach((tab, index) => {
+            const tabEl = document.createElement('div');
+            tabEl.className = `tab-item ${index === appState.activeTabIndex ? 'active' : ''}`;
+            tabEl.innerHTML = `
+                <span class="tab-name">${tab.name}</span>
+                ${appState.tabs.length > 1 ? '<button class="btn-close-tab" aria-label="Cerrar pestaña">×</button>' : ''}
+            `;
+            
+            tabEl.addEventListener('click', (e) => {
+                const closeBtn = e.target.closest('.btn-close-tab');
+                if (closeBtn) {
+                    e.stopPropagation();
+                    removeTab(index);
+                } else {
+                    switchTab(index);
+                }
+            });
+
+            tabEl.addEventListener('dblclick', () => renameTab(index));
+            
+            tabsContainer.insertBefore(tabEl, addTabBtn);
+        });
+    };
+
+    const renderCurrentTab = () => {
+        const activeTab = appState.tabs[appState.activeTabIndex];
+        if (!activeTab) return;
+        
+        tasaInput.value = activeTab.tasa || localStorage.getItem('tasaDelDia') || '';
+        
+        dolaresItemsContainer.innerHTML = '';
+        bolivaresItemsContainer.innerHTML = '';
+        dolarItemCount = 0;
+        bolivarItemCount = 0;
+
+        if (activeTab.dolarItems.length === 0 && activeTab.bolivarItems.length === 0) {
+            reiniciarCalculadora(true);
+        } else {
+            activeTab.dolarItems.forEach(item => agregarItemDolar(item.precio, item.cantidad, false));
+            activeTab.bolivarItems.forEach(item => agregarItemBolivar(item.precio, item.cantidad, false));
+            calcularTotales();
+        }
+        renderTabs();
+    };
+
+    const switchTab = (index) => {
+        if (index === appState.activeTabIndex) return;
+        serializeCurrentTab();
+        appState.activeTabIndex = index;
+        renderCurrentTab();
+        saveDraft();
+    };
+
+    const addTab = () => {
+        serializeCurrentTab();
+        
+        const nextNum = appState.nextTabNum++;
+
+        const newTab = {
+            id: Date.now(),
+            name: `Cuenta ${nextNum}`,
+            tasa: tasaInput.value,
+            dolarItems: [],
+            bolivarItems: []
+        };
+        appState.tabs.push(newTab);
+        appState.activeTabIndex = appState.tabs.length - 1;
+        renderCurrentTab();
+        saveDraft();
+    };
+
+    // --- EVENT LISTENERS ---
+
+    addTabBtn.onclick = addTab;
 
     const handleContainerClick = (e) => {
         if (e.target.classList.contains('btn-delete')) {
@@ -128,16 +263,16 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     };
 
-    // --- Funciones de Sesión ---
+    // --- SESIONES GUARDADAS ---
 
     const renderSavedSessions = () => {
         savedSessionsList.innerHTML = '';
         if (savedSessions.length === 0) {
             savedSessionsList.innerHTML = '<p>No hay cuentas guardadas.</p>';
-            deleteAllBtn.style.display = 'none'; // Oculta el botón si no hay cuentas
+            deleteAllBtn.style.display = 'none';
             return;
         }
-        deleteAllBtn.style.display = 'inline-block'; // Muestra el botón si hay cuentas
+        deleteAllBtn.style.display = 'inline-block';
 
         savedSessions.forEach(session => {
             const sessionEl = document.createElement('div');
@@ -154,35 +289,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const saveCurrentSession = (isAutomatic = false) => {
+        serializeCurrentTab();
+        const activeTab = appState.tabs[appState.activeTabIndex];
         const currentTotalBs = totalBsDisplay.textContent;
-        // No guarda si el total es 0.00
-        if (parseFloat(currentTotalBs) === 0) return;
+        
+        if (parseFloat(currentTotalBs) === 0 && activeTab.dolarItems.length === 0 && activeTab.bolivarItems.length === 0) return;
 
         let nombre;
         if (isAutomatic) {
             nombre = `${currentTotalBs} - ${new Date().toLocaleString()}`;
         } else {
-            const defaultName = `${currentTotalBs} - ${new Date().toLocaleString()}`;
-            nombre = prompt('Ingresa un nombre para esta cuenta:', defaultName);
+            const defaultName = `${activeTab.name} (${currentTotalBs})`;
+            nombre = prompt('Ingresa un nombre para guardar esta cuenta:', defaultName);
             if (!nombre) return;
         }
-
-        const dolarItems = Array.from(document.querySelectorAll('.dolar-item-row')).map(row => ({
-            precio: row.querySelector('.precio-dolar').value,
-            cantidad: row.querySelector('.cantidad-dolar').value,
-        }));
-
-        const bolivarItems = Array.from(document.querySelectorAll('.bolivar-item-row')).map(row => ({
-            precio: row.querySelector('.precio-bolivar').value,
-            cantidad: row.querySelector('.cantidad-bolivar').value,
-        }));
 
         const session = {
             id: Date.now(),
             name: nombre,
-            tasa: tasaInput.value,
-            dolarItems,
-            bolivarItems,
+            tasa: activeTab.tasa,
+            dolarItems: activeTab.dolarItems,
+            bolivarItems: activeTab.bolivarItems,
         };
 
         savedSessions.push(session);
@@ -194,14 +321,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const session = savedSessions.find(s => s.id === id);
         if (!session) return;
 
-        reiniciarCalculadora(false); // Limpia la calculadora sin añadir filas por defecto
-        tasaInput.value = session.tasa;
-
-        session.dolarItems.forEach(item => agregarItemDolar(item.precio, item.cantidad));
-        session.bolivarItems.forEach(item => agregarItemBolivar(item.precio, item.cantidad));
-        
-        attachInputListeners();
-        calcularTotales();
+        // Cargar sesión como una nueva pestaña
+        const newTab = {
+            id: Date.now(),
+            name: session.name.split(' (')[0], // Intentar recuperar nombre original
+            tasa: session.tasa,
+            dolarItems: session.dolarItems,
+            bolivarItems: session.bolivarItems
+        };
+        appState.tabs.push(newTab);
+        appState.activeTabIndex = appState.tabs.length - 1;
+        renderCurrentTab();
+        saveDraft();
     };
 
     const deleteSession = (id) => {
@@ -212,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const deleteAllSessions = () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar TODAS las cuentas guardadas? Esta acción no se puede deshacer.')) return;
+        if (!confirm('¿Estás seguro de que quieres eliminar TODAS las cuentas?')) return;
         savedSessions = [];
         localStorage.setItem('savedSessions', JSON.stringify(savedSessions));
         renderSavedSessions();
@@ -229,8 +360,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS INICIALES ---
     tasaInput.addEventListener('input', () => {
-        calcularTotales();
         localStorage.setItem('tasaDelDia', tasaInput.value);
+        calcularTotales();
     });
 
     addDolarItemBtn.addEventListener('click', () => agregarItemDolar());
@@ -238,13 +369,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     resetBtn.addEventListener('click', () => {
         if (autosaveCheckbox.checked) {
-            saveCurrentSession(true); // Guarda automáticamente sin prompt
+            saveCurrentSession(true);
         }
         reiniciarCalculadora(true);
     });
 
     themeToggleBtn.addEventListener('click', toggleTheme);
-    saveSessionBtn.addEventListener('click', () => saveCurrentSession(false)); // Guardado manual con prompt
+    saveSessionBtn.addEventListener('click', () => saveCurrentSession(false));
     deleteAllBtn.addEventListener('click', deleteAllSessions);
 
     dolaresItemsContainer.addEventListener('click', handleContainerClick);
@@ -253,11 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bolivaresItemsContainer.addEventListener('focusin', handleContainerFocus);
 
     // --- INICIALIZACIÓN ---
-    const savedTasa = localStorage.getItem('tasaDelDia');
-    if (savedTasa) {
-        tasaInput.value = savedTasa;
-    }
-
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
@@ -269,28 +395,25 @@ document.addEventListener('DOMContentLoaded', () => {
         savedSessions = loadedSessions;
     }
 
+    const draft = localStorage.getItem('calculadora_draft');
+    if (draft) {
+        appState = JSON.parse(draft);
+    }
+
+    renderCurrentTab();
     renderSavedSessions();
-    reiniciarCalculadora(true);
 
     // --- Modal "Acerca de" ---
     const aboutModal = document.getElementById('about-modal');
     const aboutBtn = document.getElementById('about-btn');
     const closeButton = document.querySelector('.close-button');
 
-    const openModal = () => {
-        aboutModal.style.display = 'block';
-    };
-
-    const closeModal = () => {
-        aboutModal.style.display = 'none';
-    };
+    const openModal = () => { aboutModal.style.display = 'block'; };
+    const closeModal = () => { aboutModal.style.display = 'none'; };
 
     aboutBtn.addEventListener('click', openModal);
     closeButton.addEventListener('click', closeModal);
-
     window.addEventListener('click', (event) => {
-        if (event.target == aboutModal) {
-            closeModal();
-        }
+        if (event.target == aboutModal) closeModal();
     });
 });

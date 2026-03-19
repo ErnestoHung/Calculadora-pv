@@ -1,1 +1,9 @@
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
 GEMINI.md
+.gemini/

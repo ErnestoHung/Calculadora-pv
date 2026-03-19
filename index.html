@@ -21,6 +21,11 @@
             <input type="number" id="tasa-input" class="tasa-input" placeholder="Ej: 39.50" step="0.01">
         </div>
 
+        <div id="tabs-container" class="tabs-container">
+            <!-- Pestañas dinámicas aquí -->
+            <button id="add-tab-btn" class="btn-add-tab" title="Nueva Cuenta">+</button>
+        </div>
+
         <div class="main-content">
             <div class="dolares-section card">
                 <h2>Entradas en Dólares (USD)</h2>
@@ -91,7 +96,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=1.2"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

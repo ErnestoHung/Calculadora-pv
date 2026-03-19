@@ -362,3 +362,92 @@ h2 {
 .btn-info:hover {
     background-color: #138496;
 }
+
+/* --- Sistema de Pestañas --- */
+.tabs-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    margin-bottom: -10px; /* Para que parezcan pegadas a la tarjeta de abajo */
+    scrollbar-width: thin;
+}
+
+.tabs-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.tab-item {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--input-border-color);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.tab-item.active {
+    opacity: 1;
+    background-color: var(--card-bg-color);
+    border-bottom: 2px solid var(--btn-add-bg-color);
+    font-weight: bold;
+    color: var(--btn-add-bg-color);
+}
+
+.tab-item:hover {
+    opacity: 1;
+}
+
+.tab-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-close-tab {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.4em; /* Ligeramente más grande */
+    cursor: pointer;
+    padding: 8px; /* Aumentar área de toque */
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-left: 5px;
+}
+
+.btn-close-tab:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.btn-add-tab {
+    background-color: var(--btn-add-bg-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5em;
+    flex-shrink: 0;
+    margin-left: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-add-tab:hover {
+    background-color: var(--btn-add-hover-bg-color);
+}

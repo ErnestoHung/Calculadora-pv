@@ -1,5 +1,5 @@
 // Versión 4: Usando rutas relativas para compatibilidad con GitHub Pages
-const CACHE_NAME = 'calculadora-pv-cache-v4';
+const CACHE_NAME = 'calculadora-pv-cache-v5';
 const urlsToCache = [
     './',
     './index.html',
@@ -14,7 +14,7 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Cache v4 abierto, guardando archivos principales.');
+                console.log('Cache v5 abierto, guardando archivos principales.');
                 return cache.addAll(urlsToCache);
             })
     );
