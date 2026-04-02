@@ -1,4 +1,5 @@
 # Calculadora de Punto de Venta
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen)](https://ernestohung.github.io/Calculadora-pv/)
 
 Este proyecto es una aplicación web de una sola página que funciona como una calculadora de estilo Punto de Venta (POS). Está diseñada para pequeñas empresas que necesitan calcular rápidamente los totales de los artículos con precios en dos monedas diferentes: dólares estadounidenses (USD) y bolívares venezolanos (Bs.).
 
@@ -34,6 +35,7 @@ Para ejecutar la aplicación localmente, debe servir los archivos desde un servi
 ### Despliegue
 
 El proyecto está configurado para el despliegue continuo en GitHub Pages.
+Puedes acceder a la versión en línea en: **[https://ernestohung.github.io/Calculadora-pv/](https://ernestohung.github.io/Calculadora-pv/)**
 
 - **Disparador:** Un `push` a la rama `main` disparará automáticamente el flujo de trabajo de despliegue.
 - **Archivo de flujo de trabajo:** La lógica de despliegue se define en `.github/workflows/deploy.yml`.

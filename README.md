@@ -1,4 +1,5 @@
 # POS Calculator
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen)](https://ernestohung.github.io/Calculadora-pv/)
 
 This project is a single-page web application that functions as a Point-of-Sale (POS) style calculator. It is designed for small businesses needing to quickly calculate totals for items priced in two different currencies: US Dollars (USD) and Venezuelan Bolivars (Bs.).
 
@@ -34,6 +35,7 @@ To run the application locally, you must serve the files from a local web server
 ### Deployment
 
 The project is set up for continuous deployment to GitHub Pages.
+You can access the live version at: **[https://ernestohung.github.io/Calculadora-pv/](https://ernestohung.github.io/Calculadora-pv/)**
 
 - **Trigger:** A `push` to the `main` branch will automatically trigger the deployment workflow.
 - **Workflow File:** The deployment logic is defined in `.github/workflows/deploy.yml`.

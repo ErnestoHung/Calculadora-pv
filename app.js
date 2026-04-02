@@ -149,6 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appState.activeTabIndex >= appState.tabs.length) {
             appState.activeTabIndex = appState.tabs.length - 1;
         }
+
+        // Si solo queda una pestaña, volver a poner "Cuenta 1" y resetear contador
+        if (appState.tabs.length === 1) {
+            appState.tabs[0].name = "Cuenta 1";
+            appState.nextTabNum = 2;
+        }
+
         renderCurrentTab();
         saveDraft();
     };
@@ -292,15 +299,18 @@ document.addEventListener('DOMContentLoaded', () => {
         serializeCurrentTab();
         const activeTab = appState.tabs[appState.activeTabIndex];
         const currentTotalBs = totalBsDisplay.textContent;
+        const currentTotalUsd = totalUsdDisplay.textContent;
         
         if (parseFloat(currentTotalBs) === 0 && activeTab.dolarItems.length === 0 && activeTab.bolivarItems.length === 0) return;
 
         let nombre;
+        const timestamp = new Date().toLocaleString();
+        const suggestedName = `${currentTotalBs} - ${currentTotalUsd} - ${timestamp}`;
+
         if (isAutomatic) {
-            nombre = `${currentTotalBs} - ${new Date().toLocaleString()}`;
+            nombre = suggestedName;
         } else {
-            const defaultName = `${activeTab.name} (${currentTotalBs})`;
-            nombre = prompt('Ingresa un nombre para guardar esta cuenta:', defaultName);
+            nombre = prompt('Ingresa un nombre para guardar esta cuenta:', suggestedName);
             if (!nombre) return;
         }
 
@@ -324,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cargar sesión como una nueva pestaña
         const newTab = {
             id: Date.now(),
-            name: session.name.split(' (')[0], // Intentar recuperar nombre original
+            name: `Cuenta ${appState.nextTabNum++}`,
             tasa: session.tasa,
             dolarItems: session.dolarItems,
             bolivarItems: session.bolivarItems
